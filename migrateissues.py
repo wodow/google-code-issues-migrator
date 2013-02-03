@@ -29,7 +29,7 @@ GITHUB_SPARE_REQUESTS = 50
 
 # Edit this list, if you like to skip issues with the following status
 # values. You can also add your custom status values.
-GOOGLE_STATUS_VALUES = (
+GOOGLE_STATUS_VALUES_FILTERED = (
 #    "New",
 #    "Accepted",
 #    "Started",
@@ -342,9 +342,9 @@ def process_gcode_issues(existing_issues):
             if gid in existing_issues:
                 github_issue = existing_issues[gid]
                 output("Not adding issue %d (exists)" % gid)
-            # Skipping issue if not in GOOGLE_ISSUE_STATUS_VALUES
-            elif issue.status and issue.status.text in GOOGLE_ISSUE_STATUS_VALUES:
-                output("Skipping issue %d (issue status filtered by GOOGLE_ISSUE_STATUS_VALUES)" % gid)
+            # Skipping issue if not in GOOGLE_STATUS_VALUES_FILTERED
+            elif issue.status and issue.status.text in GOOGLE_STATUS_VALUES_FILTERED:
+                output("Skipping issue %d (issue status filtered by GOOGLE_STATUS_VALUES_FILTERED)" % gid)
             else: github_issue = add_issue_to_github(issue)
 
             if github_issue:
