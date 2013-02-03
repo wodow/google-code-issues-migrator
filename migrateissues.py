@@ -23,6 +23,10 @@ logging.basicConfig(level = logging.ERROR)
 # The maximum number of records to retrieve from Google Code in a single request
 GOOGLE_MAX_RESULTS = 25
 
+# The minimum number of remaining Github rate-limited API requests before we pre-emptively
+# abort to avoid hitting the limit part-way through migrating an issue.
+GITHUB_SPARE_REQUESTS = 50
+
 # Edit this list, if you like to skip issues with the following status
 # values. You can also add your custom status values.
 GOOGLE_STATUS_VALUES = (
@@ -37,11 +41,18 @@ GOOGLE_STATUS_VALUES = (
 #    "Done",
 )
 
-# Mapping from Google Code issue states to Github labels
+# Mapping from Google Code issue states to Github labels. Uncomment the
+# default states to map them, or add your custom states to the array.
 STATE_MAPPING = {
-    'invalid': "invalid",
-    'duplicate': "duplicate",
-    'wontfix': "wontfix"
+#    "New"       :"new",
+#    "Accepted"  :"accepted",
+#    "Started"   :"started",
+#    "Fixed"     :"fixed",
+#    "Verified"  :"verified",
+    "Invalid"   :"invalid",
+    "Duplicate" :"duplicate",
+    "WontFix"   :"wontfix",
+#    "Done"      :"done",
 }
 
 GOOGLE_ISSUE_TEMPLATE = '_Original issue: %s_'
@@ -50,10 +61,6 @@ GOOGLE_URL_RE = 'http://code.google.com/p/%s/issues/detail\?id=(\d+)'
 GOOGLE_ID_RE = GOOGLE_ISSUE_TEMPLATE % GOOGLE_URL_RE
 NUM_RE = re.compile('\s#(\d+)')
 ISSUE_RE = re.compile('[I|i]ssue\s(\d+)')
-
-# The minimum number of remaining Github rate-limited API requests before we pre-emptively
-# abort to avoid hitting the limit part-way through migrating an issue.
-GITHUB_SPARE_REQUESTS = 50
 
 # Mapping from Google Code issue labels to Github labels. Uncomment the
 # default labels to map them, or add your custom labels to the array.
