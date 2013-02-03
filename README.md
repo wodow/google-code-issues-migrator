@@ -13,6 +13,8 @@ matching issues and comments in Github.  This has some limitations:
    to each issue and comment stating the original author and creation date.
 
  - Attachments are lost, since Github doesn't support them in issues or comments.
+ 
+ - 
 
 Otherwise almost everything is preserved, including labels, issue state (open/closed),
 issue status (invalid, wontfix, duplicate) and merged-into links for duplicate issues.
@@ -41,6 +43,8 @@ what's already on Github.
 	  -s, --synchronize-ids     Ensure that migrated issues keep the same ID
 
         You will be prompted for your github password.
+        
+        Advanced settings can be defined by modifying "migrateissues.py".
 
 `--assign-owner` automatically assigns any issues that currently have an owner to your
 Github user (the one running the script), even if you weren't the original owner.  This
