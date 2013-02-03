@@ -20,6 +20,21 @@ import gdata.data
 
 logging.basicConfig(level = logging.ERROR)
 
+# Migrate issues with the following status values
+ISSUE_STATUS_VALUES = (
+    "New",
+    "Accepted",
+    "Started",
+    "Fixed",
+    "Verified",
+    "Invalid",
+    "Duplicate",
+    "WontFix",
+    "Done",
+    )
+
+
+
 # Patch gdata's CommentEntry Updates object to include the merged-into field
 
 class MergedIntoUpdate(XmlElement):
@@ -273,6 +288,9 @@ def process_gcode_issues(existing_issues):
             if issue.title.text in existing_issues:
                 github_issue = existing_issues[issue.title.text]
                 output("Not adding issue %d (exists)" % gid)
+            # Skipping issue if not in ISSUE_STATUS_VALUES
+            elif issue.status and issue.status.text not in ISSUE_STATUS_VALUES:
+                output("Skipping issue %d (issue status not in ISSUE_STATUS_VALUES)" % gid)
             else: github_issue = add_issue_to_github(issue)
 
             if github_issue:
