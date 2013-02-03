@@ -34,14 +34,7 @@ GOOGLE_STATUS_VALUES = (
 #    "Done",
 )
 
-# Patch gdata's CommentEntry Updates object to include the merged-into field
-
-class MergedIntoUpdate(XmlElement):
-    _qname = gdata.projecthosting.data.ISSUES_TEMPLATE % 'mergedIntoUpdate'
-gdata.projecthosting.data.Updates.mergedIntoUpdate = MergedIntoUpdate
-
 # The maximum number of records to retrieve from Google Code in a single request
-
 GOOGLE_MAX_RESULTS = 25
 
 GOOGLE_ISSUE_TEMPLATE = '_Original issue: %s_'
@@ -53,7 +46,6 @@ ISSUE_RE = re.compile('[I|i]ssue\s(\d+)')
 
 # The minimum number of remaining Github rate-limited API requests before we pre-emptively
 # abort to avoid hitting the limit part-way through migrating an issue.
-
 GITHUB_SPARE_REQUESTS = 50
 
 # Mapping from Google Code issue labels to Github labels. Uncomment the
@@ -85,13 +77,16 @@ LABEL_MAPPING = {
 }
 
 # Mapping from Google Code issue states to Github labels
-
 STATE_MAPPING = {
     'invalid': "invalid",
     'duplicate': "duplicate",
     'wontfix': "wontfix"
 }
 
+# Patch gdata's CommentEntry Updates object to include the merged-into field
+class MergedIntoUpdate(XmlElement):
+    _qname = gdata.projecthosting.data.ISSUES_TEMPLATE % 'mergedIntoUpdate'
+gdata.projecthosting.data.Updates.mergedIntoUpdate = MergedIntoUpdate
 
 def output(string):
     sys.stdout.write(string)
