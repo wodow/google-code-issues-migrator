@@ -21,7 +21,7 @@ import gdata.data
 logging.basicConfig(level = logging.ERROR)
 
 # Edit this list, if you like to skip issues with the following status
-# values. You can also add custom status values
+# values. You can also add your custom status values.
 GOOGLE_STATUS_VALUES = (
 #    "New",
 #    "Accepted",
@@ -56,11 +56,32 @@ ISSUE_RE = re.compile('[I|i]ssue\s(\d+)')
 
 GITHUB_SPARE_REQUESTS = 50
 
-# Mapping from Google Code issue labels to Github labels
-
+# Mapping from Google Code issue labels to Github labels. Uncomment the
+# default labels to map them, or add your custom labels to the array.
 LABEL_MAPPING = {
-    'Type-Defect' : "bug",
-    'Type-Enhancement' : "enhancement"
+    'Type-Defect'           : 'bug',
+    'Type-Enhancement'      : 'enhancement',
+#    'Type-Task'             : 'Type-Task',
+#    'Type-Review'           : 'Type-Review',
+#    'Type-Other'            : 'Type-Other',
+#    'Priority-Critical'     : 'Priority-Critical',
+#    'Priority-High'         : 'Priority-High',
+#    'Priority-Medium'       : 'Priority-Medium',
+#    'Priority-Low'          : 'Priority-Low',
+#    'OpSys-All'             : 'OpSys-All',
+#    'OpSys-Windows'         : 'OpSys-Windows',
+#    'OpSys-Linux'           : 'OpSys-Linux',
+#    'OpSys-OSX'             : 'OpSys-OSX',
+#    'Milestone-Release1.0'  : 'Milestone-Release1.0',
+#    'Component-UI'          : 'Component-UI',
+#    'Component-Logic'       : 'Component-Logic',
+#    'Component-Persistence' : 'Component-Persistence',
+#    'Component-Scripts'     : 'Component-Scripts',
+#    'Component-Docs'        : 'Component-Docs',
+#    'Security'              : 'Security',
+#    'Performance'           : 'Performance',
+#    'Usability'             : 'Usability',
+#    'Maintainability'       : 'Maintainability',
 }
 
 # Mapping from Google Code issue states to Github labels
@@ -167,7 +188,7 @@ def add_issue_to_github(issue):
     content = issue.content.text
     date = parse_gcode_date(issue.published.text)
 
-    # Github takes issue with % in the title or body.  
+    # Github takes issue with % in the title or body.
     title = title.replace('%', '&#37;')
 
     # Github rate-limits API requests to 5000 per hour, and if we hit that limit part-way
@@ -312,7 +333,7 @@ def process_gcode_issues(existing_issues):
                         github_issue = github_repo.create_issue(title, body = body, labels = [github_label("imported")])
                         github_issue.edit(state = "closed")
                         existing_issues[previous_gid]=github_issue
-                    
+
 
             # Add the issue and its comments to Github, if we haven't already
 
@@ -370,7 +391,7 @@ def log_rate_info():
     logging.info( 'Rate limit (remaining/total) %s',repr(github.rate_limiting))
     # Note: this requires extended version of PyGithub from tfmorris/PyGithub repo
     #logging.info( 'Rate limit (remaining/total) %s',repr(github.rate_limit(refresh=True)))
-    
+
 if __name__ == "__main__":
 
     usage = "usage: %prog [options] <google project name> <github username> <github project>"
@@ -392,7 +413,7 @@ if __name__ == "__main__":
     label_cache = {}    # Cache Github tags, to avoid unnecessary API requests
 
     google_project_name, github_user_name, github_project = args
-    
+
     password_is_wrong = True
     while password_is_wrong:
         github_password = getpass.getpass("Github password: ")
