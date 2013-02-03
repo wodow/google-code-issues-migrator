@@ -43,7 +43,7 @@ GOOGLE_STATUS_VALUES = (
 
 # Mapping from Google Code issue states to Github labels. Uncomment the
 # default states to map them, or add your custom states to the array.
-STATE_MAPPING = {
+GOOGLE_STATUS_MAPPING = {
 #    "New"       :"new",
 #    "Accepted"  :"accepted",
 #    "Started"   :"started",
@@ -64,7 +64,7 @@ ISSUE_RE = re.compile('[I|i]ssue\s(\d+)')
 
 # Mapping from Google Code issue labels to Github labels. Uncomment the
 # default labels to map them, or add your custom labels to the array.
-LABEL_MAPPING = {
+GOOGLE_LABEL_MAPPING = {
     'Type-Defect'           : 'bug',
     'Type-Enhancement'      : 'enhancement',
 #    'Type-Task'             : 'Type-Task',
@@ -215,8 +215,8 @@ def add_issue_to_github(issue):
 
     # Add additional labels based on the issue's state
 
-    if status in STATE_MAPPING:
-        labels.append(STATE_MAPPING[status])
+    if status in GOOGLE_STATUS_MAPPING:
+        labels.append(GOOGLE_STATUS_MAPPING[status])
 
     # Add the new Github issue with its labels and a header identifying it as migrated
 
