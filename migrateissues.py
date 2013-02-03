@@ -103,6 +103,8 @@ def output(string):
 def  mapissue(match):
     """Map a Google Code issue reference to the correct Github issue number """
     old = match.group(1)
+    output("\n\n---------------------\n\n"+ match +"\n\n---------------------\n\n")
+    output("\n\n---------------------\n\n"+ old +"\n\n---------------------\n\n")
     # TODO: map old issue to new issue
     # can't assume 1:1 mapping due to missing issues on GC & added issues on Github
     return 'issue #' +old
@@ -211,7 +213,7 @@ def add_issue_to_github(issue):
         for label in issue.label:
             if label.text.startswith("Priority-") and options.omit_priority:
                 continue
-            labels.append(LABEL_MAPPING.get(label.text, label.text))
+            labels.append(GOOGLE_LABEL_MAPPING.get(label.text, label.text))
 
     # Add additional labels based on the issue's state
 
