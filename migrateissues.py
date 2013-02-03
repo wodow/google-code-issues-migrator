@@ -20,6 +20,9 @@ import gdata.data
 
 logging.basicConfig(level = logging.ERROR)
 
+# The maximum number of records to retrieve from Google Code in a single request
+GOOGLE_MAX_RESULTS = 25
+
 # Edit this list, if you like to skip issues with the following status
 # values. You can also add your custom status values.
 GOOGLE_STATUS_VALUES = (
@@ -34,8 +37,12 @@ GOOGLE_STATUS_VALUES = (
 #    "Done",
 )
 
-# The maximum number of records to retrieve from Google Code in a single request
-GOOGLE_MAX_RESULTS = 25
+# Mapping from Google Code issue states to Github labels
+STATE_MAPPING = {
+    'invalid': "invalid",
+    'duplicate': "duplicate",
+    'wontfix': "wontfix"
+}
 
 GOOGLE_ISSUE_TEMPLATE = '_Original issue: %s_'
 GOOGLE_URL = 'http://code.google.com/p/%s/issues/detail?id=%d'
@@ -74,13 +81,6 @@ LABEL_MAPPING = {
 #    'Performance'           : 'Performance',
 #    'Usability'             : 'Usability',
 #    'Maintainability'       : 'Maintainability',
-}
-
-# Mapping from Google Code issue states to Github labels
-STATE_MAPPING = {
-    'invalid': "invalid",
-    'duplicate': "duplicate",
-    'wontfix': "wontfix"
 }
 
 # Patch gdata's CommentEntry Updates object to include the merged-into field
