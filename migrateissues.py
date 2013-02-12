@@ -8,8 +8,7 @@ import getpass
 
 from datetime import datetime
 
-from github import Github
-from github import GithubException
+import github
 from atom.core import XmlElement
 
 import gdata.projecthosting.client
@@ -30,33 +29,33 @@ GITHUB_SPARE_REQUESTS = 50
 # Edit this list, if you like to skip issues with the following status
 # values. You can also add your custom status values.
 GOOGLE_STATUS_VALUES_FILTERED = (
-#    "New",
-#    "Accepted",
-#    "Started",
-#    "Fixed",
-#    "Verified",
-#    "Invalid",
-#    "Duplicate",
-#    "WontFix",
-#    "Done",
+    #"New",
+    #"Accepted",
+    #"Started",
+    #"Fixed",
+    #"Verified",
+    #"Invalid",
+    #"Duplicate",
+    #"WontFix",
+    #"Done",
 )
 
 # Mapping from Google Code issue states to Github labels. Uncomment the
 # default states to map them, or add your custom states to the array.
 GOOGLE_STATUS_MAPPING = {
-#    "New"       :"new",
-#    "Accepted"  :"accepted",
-#    "Started"   :"started",
-#    "Fixed"     :"fixed",
-#    "Verified"  :"verified",
+    #"New"       :"new",
+    #"Accepted"  :"accepted",
+    #"Started"   :"started",
+    #"Fixed"     :"fixed",
+    #"Verified"  :"verified",
     "Invalid"   :"invalid",
     "Duplicate" :"duplicate",
     "WontFix"   :"wontfix",
-#    "Done"      :"done",
+    #"Done"      :"done",
 }
 
 GOOGLE_ISSUE_TEMPLATE = '_Original issue: %s_'
-GOOGLE_URL = 'http://code.google.com/p/%s/issues/detail?id=%d'
+GOOGLE_URL    = 'http://code.google.com/p/%s/issues/detail?id=%d'
 GOOGLE_URL_RE = 'http://code.google.com/p/%s/issues/detail\?id=(\d+)'
 GOOGLE_ID_RE = GOOGLE_ISSUE_TEMPLATE % GOOGLE_URL_RE
 NUM_RE = re.compile('\s#(\d+)')
@@ -67,27 +66,27 @@ ISSUE_RE = re.compile('[I|i]ssue\s(\d+)')
 GOOGLE_LABEL_MAPPING = {
     'Type-Defect'           : 'bug',
     'Type-Enhancement'      : 'enhancement',
-#    'Type-Task'             : 'Type-Task',
-#    'Type-Review'           : 'Type-Review',
-#    'Type-Other'            : 'Type-Other',
-#    'Priority-Critical'     : 'Priority-Critical',
-#    'Priority-High'         : 'Priority-High',
-#    'Priority-Medium'       : 'Priority-Medium',
-#    'Priority-Low'          : 'Priority-Low',
-#    'OpSys-All'             : 'OpSys-All',
-#    'OpSys-Windows'         : 'OpSys-Windows',
-#    'OpSys-Linux'           : 'OpSys-Linux',
-#    'OpSys-OSX'             : 'OpSys-OSX',
-#    'Milestone-Release1.0'  : 'Milestone-Release1.0',
-#    'Component-UI'          : 'Component-UI',
-#    'Component-Logic'       : 'Component-Logic',
-#    'Component-Persistence' : 'Component-Persistence',
-#    'Component-Scripts'     : 'Component-Scripts',
-#    'Component-Docs'        : 'Component-Docs',
-#    'Security'              : 'Security',
-#    'Performance'           : 'Performance',
-#    'Usability'             : 'Usability',
-#    'Maintainability'       : 'Maintainability',
+    #'Type-Task'             : 'Type-Task',
+    #'Type-Review'           : 'Type-Review',
+    #'Type-Other'            : 'Type-Other',
+    #'Priority-Critical'     : 'Priority-Critical',
+    #'Priority-High'         : 'Priority-High',
+    #'Priority-Medium'       : 'Priority-Medium',
+    #'Priority-Low'          : 'Priority-Low',
+    #'OpSys-All'             : 'OpSys-All',
+    #'OpSys-Windows'         : 'OpSys-Windows',
+    #'OpSys-Linux'           : 'OpSys-Linux',
+    #'OpSys-OSX'             : 'OpSys-OSX',
+    #'Milestone-Release1.0'  : 'Milestone-Release1.0',
+    #'Component-UI'          : 'Component-UI',
+    #'Component-Logic'       : 'Component-Logic',
+    #'Component-Persistence' : 'Component-Persistence',
+    #'Component-Scripts'     : 'Component-Scripts',
+    #'Component-Docs'        : 'Component-Docs',
+    #'Security'              : 'Security',
+    #'Performance'           : 'Performance',
+    #'Usability'             : 'Usability',
+    #'Maintainability'       : 'Maintainability',
 }
 
 # Patch gdata's CommentEntry Updates object to include the merged-into field
@@ -99,12 +98,9 @@ def output(string):
     sys.stdout.write(string)
     sys.stdout.flush()
 
-
-def  mapissue(match):
+def mapissue(match):
     """Map a Google Code issue reference to the correct Github issue number """
     old = match.group(1)
-    output("\n\n---------------------\n\n"+ match +"\n\n---------------------\n\n")
-    output("\n\n---------------------\n\n"+ old +"\n\n---------------------\n\n")
     # TODO: map old issue to new issue
     # can't assume 1:1 mapping due to missing issues on GC & added issues on Github
     return 'issue #' +old
@@ -123,20 +119,20 @@ def github_label(name, color = "FFFFFF"):
     try: return label_cache[name]
     except KeyError:
         try: return label_cache.setdefault(name, github_repo.get_label(name))
-        except GithubException:
+        except github.GithubException:
             return label_cache.setdefault(name, github_repo.create_label(name, color))
 
 
 def parse_gcode_id(id_text):
 
-    """ Returns the numeric part of a Google Code ID string. """
+    """ Returns the numeric part of a Google Code ID stringh. """
 
     return int(re.search("\d+$", id_text).group(0))
 
 
 def parse_gcode_date(date_text):
 
-    """ Transforms a Google Code date into a more human readable string. """
+    """ Transforms a Google Code date into a more human readable stringh. """
 
     parsed = datetime.strptime(date_text, "%Y-%m-%dT%H:%M:%S.000Z")
     return parsed.strftime("%B %d, %Y %H:%M:%S")
@@ -199,7 +195,7 @@ def add_issue_to_github(issue):
     # through adding an issue it could end up in an incomplete state.  To avoid this we'll
     # ensure that there are enough requests remaining before we start migrating an issue.
 
-    if github.rate_limiting[0] < GITHUB_SPARE_REQUESTS:
+    if gh.rate_limiting[0] < GITHUB_SPARE_REQUESTS:
         raise Exception("Aborting to to impending Github API rate-limit cutoff.")
 
     # Build a list of labels to apply to the new issue, including an 'imported' tag that
@@ -238,7 +234,7 @@ def add_issue_to_github(issue):
     # Assigns issues that originally had an owner to the current user
 
     if issue.owner and options.assign_owner:
-        assignee = github.get_user(github_user.login)
+        assignee = gh.get_user(github_user.login)
         if not options.dry_run:
             github_issue.edit(assignee = assignee)
 
@@ -265,7 +261,7 @@ def add_comments_to_issue(github_issue, gid):
     while True:
 
         query = gdata.projecthosting.client.Query(start_index = start_index, max_results = max_results)
-        comments_feed = google.get_comments(google_project_name, gid, query = query)
+        comments_feed = gc.get_comments(google_project, gid, query = query)
 
         # Filter out empty and otherwise unnecessary comments, unless they contain the
         # 'migrated into' update for a duplicate issue; we'll generate a special Github
@@ -300,7 +296,6 @@ def add_comment_to_github(comment, github_issue):
 
 
 def process_gcode_issues(existing_issues):
-
     """ Migrates all Google Code issues in the given dictionary to Github. """
 
     start_index = 1
@@ -310,7 +305,7 @@ def process_gcode_issues(existing_issues):
     while True:
 
         query = gdata.projecthosting.client.Query(start_index = start_index, max_results = max_results)
-        issues_feed = google.get_issues(google_project_name, query = query)
+        issues_feed = gc.get_issues(google_project, query = query)
 
         if not issues_feed.entry:
             break
@@ -331,7 +326,7 @@ def process_gcode_issues(existing_issues):
                     title = "Google Code skipped issue %d" % (previous_gid )
                     if previous_gid not in existing_issues:
                         body = "_Skipping this issue number to maintain synchronization with Google Code issue IDs._"
-                        link = GOOGLE_URL % (google_project_name, previous_gid)
+                        link = GOOGLE_URL % (google_project, previous_gid)
                         footer = GOOGLE_ISSUE_TEMPLATE % link
                         body += '\n\n' + footer
                         github_issue = github_repo.create_issue(title, body = body, labels = [github_label("imported")])
@@ -368,14 +363,23 @@ def get_existing_github_issues():
     """
 
     output("Retrieving existing Github issues...\n")
-    id_re = re.compile(GOOGLE_ID_RE % google_project_name)
+    id_re = re.compile(GOOGLE_ID_RE % google_project)
 
     try:
+        # Get all issues (opened and closed) from Github, put them toghether and
+        # convert them to a list.
         existing_issues = list(github_repo.get_issues(state='open')) + list(github_repo.get_issues(state='closed'))
+        
         existing_count = len(existing_issues)
+        
+        # Each entry from issue_map points from a google issue to a github issue
         issue_map = {}
+        
+        # Search for issues that have been migrated by looking for id_re in body
         for issue in existing_issues:
             id_match = id_re.search(issue.body)
+            
+            # If issue has been migrated
             if id_match:
                 google_id = int(id_match.group(1))
                 issue_map[google_id] = issue
@@ -385,16 +389,18 @@ def get_existing_github_issues():
                     logging.warn('Issue missing imported label %s- %s - %s',google_id,repr(labels),issue.title)
         imported_count = len(issue_map)
         logging.info('Found %d Github issues, %d imported',existing_count,imported_count)
+        
     except:
         logging.error( 'Failed to enumerate existing issues')
         raise
+        
     return issue_map
 
 
 def log_rate_info():
-    logging.info( 'Rate limit (remaining/total) %s',repr(github.rate_limiting))
+    logging.info( 'Rate limit (remaining/total) %s',repr(gh.rate_limiting))
     # Note: this requires extended version of PyGithub from tfmorris/PyGithub repo
-    #logging.info( 'Rate limit (remaining/total) %s',repr(github.rate_limit(refresh=True)))
+    #logging.info( 'Rate limit (remaining/total) %s',repr(gh.rate_limit(refresh=True)))
 
 if __name__ == "__main__":
 
@@ -416,40 +422,52 @@ if __name__ == "__main__":
 
     label_cache = {}    # Cache Github tags, to avoid unnecessary API requests
 
-    google_project_name, github_user_name, github_project = args
+    google_project, github_username, github_project = args
 
+    # Ask for password repeatedly and continue when credentials are correct.
     password_is_wrong = True
     while password_is_wrong:
         github_password = getpass.getpass("Github password: ")
         try:
-            Github(github_user_name, github_password).get_user().login
+            github.Github(github_username, github_password).get_user().login
             password_is_wrong = False
-        except GithubException, exception:
+        except github.GithubException, exception:
             print "Bad credentials, try again."
 
-    google = gdata.projecthosting.client.ProjectHostingClient()
-    github = Github(github_user_name, github_password)
+    # Google Code
+    gc = gdata.projecthosting.client.ProjectHostingClient()
+    
+    # Github
+    gh = github.Github(github_username, github_password)
+    
     log_rate_info()
-    github_user = github.get_user()
+    github_user = gh.get_user()
 
-    # If the project name is specified as owner/project, assume that it's owned by either
-    # a different user than the one we have credentials for, or an organization.
-
+    # If the project name is specified as "owner/project", assume that it's
+    # owned by either a different user than the one we have credentials for,
+    # or an organization.
     if "/" in github_project:
         owner_name, github_project = github_project.split("/")
-        try: github_owner = github.get_user(owner_name)
-        except GithubException:
-            try: github_owner = github.get_organization(owner_name)
-            except GithubException:
+        try: github_owner = gh.get_user(owner_name)
+        except github.GithubException:
+            try: github_owner = gh.get_organization(owner_name)
+            except github.GithubException:
                 github_owner = github_user
     else: github_owner = github_user
-
+    
+    # Get Github repository
     github_repo = github_owner.get_repo(github_project)
 
+    # Do migration!
     try:
         existing_issues = get_existing_github_issues()
         log_rate_info()
+        
+        # Migrate Google Code issues in the given dictionary to Github.
         process_gcode_issues(existing_issues)
+        
+        # Rewrite google issue numbers in github to match github issue numbers.
+        #rewrite_github_issue_numbers()
     except Exception:
         parser.print_help()
         raise
