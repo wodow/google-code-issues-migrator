@@ -152,6 +152,7 @@ def format_comment(comment):
 
     author = comment.author[0].name.text
     date = parse_gcode_date(comment.published.text)
+    content = comment.content.text
 
     if comment.updates.mergedIntoUpdate:
         return "_This issue is a duplicate of #%d_" % (options.base_id + int(comment.updates.mergedIntoUpdate.text))
