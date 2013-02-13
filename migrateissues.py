@@ -388,15 +388,15 @@ def map_google_id_to_github():
         # convert them to a list.
         github_issues = list(github_repo.get_issues(state='open')) + list(github_repo.get_issues(state='closed'))
         
-        # Each pair in google_id_to_github points from a Google issue ID (int)
-        # to a Github issue ID (int)
+        # Each pair in google_id_to_github points from a Google-ID (int)
+        # to a Github-ID (int)
         google_id_to_github = {}
         
         # Search for issues that have been migrated by looking for id_re in body
         for issue in github_issues:
             id_match = id_re.search(issue.body)
             
-            # If issue has been migrated store Google and Github IDs
+            # If issue has been migrated store Google- and Github-IDs
             if id_match:
                 google_id = int(id_match.group(1))
                 github_id = int(issue.number)
@@ -405,25 +405,37 @@ def map_google_id_to_github():
         logging.info('Found %d Github issues, %d imported',len(github_issues),len(google_id_to_github))
         
         def replace_issue_number(match):
-            value = match.group()
+            match_string = match.group(1)
+            # Similar to "issue #1" or "issue 1."
             if match.group(2):
                 google_id = int(match.group(2))
-                return "%s _(Github: #%d)_" %(value, google_id_to_github[google_id])
-            else:
+                # Construct note with Github-ID to include after Google-ID
+                note_to_include = " %s (Github: #%d)" % google_id, google_id_to_github[google_id]
+                # Replace Google-ID in match_string with according Github-ID
+                return re.sub("\d", note_to_include, match_string)
+            # Similar to "#1"
+            elif match.group(3):
                 google_id = int(match.group(3))
-                return "%s (Github: #%d)" %(value, google_id_to_github[google_id])
+                # Construct note with Github-ID to include after Google-ID
+                note_to_include = " %s (Github: #%d)" % google_id, google_id_to_github[google_id]
+                # Replace Google-ID in match_string with according Github-ID
+                return re.sub("\d", note_to_include, match_string)
+            # Equals a URL similar to "http://code.google.com/p/MYPROJECT/issues/detail?id=1"
+            elif match.group(4):
+                google_id = int(match.group(4))
+                return "%s (Github: #%d)" %(match_string, google_id_to_github[google_id])
 
         # Iterate every issue and if it's imported ...
         for issue in github_issues:
             if issue.number in google_id_to_github.values():
                 # ... use this regex to find references to issues
-                re_issue_string = r"(issue\s?#?\s?(\d+)|id=(\d+))"
+                re_issue_string = r"(issue\s?#?(\d+)[\.\?!,\s]|#(\d+)[\.\?!,\s]|%s)" % GOOGLE_URL_RE % google_project
                 issue_re = re.compile(re_issue_string, re.IGNORECASE)
                 
-                # ... in the issue body and append the Github ID
+                # ... in the issue body and append the Github-ID
                 issue.edit(body=issue_re.sub(replace_issue_number, issue.body))
 
-                # ... and in the comment bodies and append the Github ID
+                # ... and in the comment bodies and append the Github-ID
                 for comment in issue.get_comments():
                     GOOGLE_URL_RE
                     comment.edit(body=issue_re.sub(replace_issue_number, comment.body))
