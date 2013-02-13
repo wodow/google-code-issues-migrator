@@ -17,7 +17,7 @@ import gdata.gauth
 import gdata.client
 import gdata.data
 
-logging.basicConfig(level = logging.ERROR)
+logging.basicConfig(level = logging.INFO)
 
 # The maximum number of records to retrieve from Google Code in a single request
 GOOGLE_MAX_RESULTS = 25
@@ -431,10 +431,12 @@ def get_github_issue_mapping():
                 # Do rewrite and save here
                 re_issue_string = r"issue\s?#?\s?(\d)"
                 issue_re = re.compile(re_issue_string, re.IGNORECASE)
+                
+                issue.edit(body=issue_re.sub(replace_issue_number, issue.body))
 
                 for comment in issue.get_comments():
-                    new_body = issue_re.sub(replace_issue_number, comment.body)
-                    comment.edit(body=new_body)
+                    comment.edit(body=issue_re.sub(replace_issue_number, comment.body))
+                    output("Editing issue numbers on comments of Github #%d" % issue.number)
                     
                     
                     
