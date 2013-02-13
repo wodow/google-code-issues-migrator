@@ -421,20 +421,24 @@ def get_github_issue_mapping():
         logging.info('Found %d Github issues, %d imported',len(github_issues),len(google_id_to_github))
         
         def replace_issue_number(match):
-            "Return the hex string for a decimal number"
             value = match.group()
-            google_id = int(match.group(1))
-            return "%s _(Github: #%d)_" %(value, google_id_to_github[google_id])
+            if match.group(2):
+                google_id = int(match.group(2))
+                return "%s _(Github: #%d)_" %(value, google_id_to_github[google_id])
+            else:
+                google_id = int(match.group(3))
+                return "%s (Github: #%d)" %(value, google_id_to_github[google_id])
 
         for issue in github_issues:
             if issue.number in google_id_to_github.values():
                 # Do rewrite and save here
-                re_issue_string = r"issue\s?#?\s?(\d)"
+                re_issue_string = r"(issue\s?#?\s?(\d+)|id=(\d+))"
                 issue_re = re.compile(re_issue_string, re.IGNORECASE)
                 
                 issue.edit(body=issue_re.sub(replace_issue_number, issue.body))
 
                 for comment in issue.get_comments():
+                    GOOGLE_URL_RE
                     comment.edit(body=issue_re.sub(replace_issue_number, comment.body))
                     output("Editing issue numbers on comments of Github #%d" % issue.number)
                     
