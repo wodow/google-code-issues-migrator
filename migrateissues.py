@@ -396,7 +396,58 @@ def get_existing_github_issues():
         
     return issue_map
 
+def get_github_issue_mapping():
+    output("Retrieving existing Github issues...\n")
+    id_re = re.compile(GOOGLE_ID_RE % google_project)
 
+    try:
+        # Get all issues (opened and closed) from Github, put them toghether and
+        # convert them to a list.
+        github_issues = list(github_repo.get_issues(state='open')) + list(github_repo.get_issues(state='closed'))
+        
+        # Each entry from issue_map points from a google issue to a github issue
+        google_id_to_github = {}
+        
+        # Search for issues that have been migrated by looking for id_re in body
+        for issue in github_issues:
+            id_match = id_re.search(issue.body)
+            
+            # If issue has been migrated
+            if id_match:
+                google_id = int(id_match.group(1))
+                github_id = int(issue.number)
+                google_id_to_github[google_id] = github_id
+
+        logging.info('Found %d Github issues, %d imported',len(github_issues),len(google_id_to_github))
+        
+        def replace_issue_number(match):
+            "Return the hex string for a decimal number"
+            value = match.group()
+            google_id = int(match.group(1))
+            return "%s _(Github: #%d)_" %(value, google_id_to_github[google_id])
+
+        for issue in github_issues:
+            if issue.number in google_id_to_github.values():
+                # Do rewrite and save here
+                re_issue_string = r"issue\s?#?\s?(\d)"
+                issue_re = re.compile(re_issue_string, re.IGNORECASE)
+
+                for comment in issue.get_comments():
+                    new_body = issue_re.sub(replace_issue_number, comment.body)
+                    comment.edit(body=new_body)
+                    
+                    
+                    
+                    
+
+    except:
+        logging.error( 'Failed to enumerate existing issues')
+        raise
+        
+    return google_id_to_github
+    
+    
+    
 def log_rate_info():
     logging.info( 'Rate limit (remaining/total) %s',repr(gh.rate_limiting))
     # Note: this requires extended version of PyGithub from tfmorris/PyGithub repo
@@ -467,7 +518,7 @@ if __name__ == "__main__":
         process_gcode_issues(existing_issues)
         
         # Rewrite google issue numbers in github to match github issue numbers.
-        #rewrite_github_issue_numbers()
+        get_github_issue_mapping()
     except Exception:
         parser.print_help()
         raise
