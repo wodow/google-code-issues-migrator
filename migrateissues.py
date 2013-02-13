@@ -58,8 +58,6 @@ GOOGLE_ISSUE_TEMPLATE = '_Original issue: %s_'
 GOOGLE_URL    = 'http://code.google.com/p/%s/issues/detail?id=%d'
 GOOGLE_URL_RE = 'http://code.google.com/p/%s/issues/detail\?id=(\d+)'
 GOOGLE_ID_RE = GOOGLE_ISSUE_TEMPLATE % GOOGLE_URL_RE
-NUM_RE = re.compile('\s#(\d+)')
-ISSUE_RE = re.compile('[I|i]ssue\s(\d+)')
 
 # Mapping from Google Code issue labels to Github labels. Uncomment the
 # default labels to map them, or add your custom labels to the array.
@@ -97,20 +95,6 @@ gdata.projecthosting.data.Updates.mergedIntoUpdate = MergedIntoUpdate
 def output(string):
     sys.stdout.write(string)
     sys.stdout.flush()
-
-def mapissue(match):
-    """Map a Google Code issue reference to the correct Github issue number """
-    old = match.group(1)
-    # TODO: map old issue to new issue
-    # can't assume 1:1 mapping due to missing issues on GC & added issues on Github
-    return 'issue #' +old
-
-def escape(s):
-    """Process text to convert markup and escape things which need escaping"""
-    s = re.sub(NUM_RE," #  \g<1>", s) # escape things which look like Github issue refs
-    s = s.replace('%', '&#37;')  # Escape % signs
-    s = re.sub(ISSUE_RE,mapissue, s) # convert Google Code issue refs to Github markup
-    return s
 
 def github_label(name, color = "FFFFFF"):
 
@@ -168,7 +152,6 @@ def format_comment(comment):
 
     author = comment.author[0].name.text
     date = parse_gcode_date(comment.published.text)
-    content = escape(comment.content.text)
 
     if comment.updates.mergedIntoUpdate:
         return "_This issue is a duplicate of #%d_" % (options.base_id + int(comment.updates.mergedIntoUpdate.text))
@@ -223,7 +206,6 @@ def add_issue_to_github(issue):
     header = "_Original author: %s (%s)_" % (author, date)
     footer = GOOGLE_ISSUE_TEMPLATE % link
     body = "%s\n\n%s\n\n\n%s" % (header, content, footer)
-    body = escape(body)
 
     output("Adding issue %d" % gid)
 
@@ -396,8 +378,8 @@ def get_existing_github_issues():
         
     return issue_map
 
-def get_github_issue_mapping():
-    output("Retrieving existing Github issues...\n")
+def map_google_id_to_github():
+    output("Retrieving existing Github issues for ID mapping...\n")
     id_re = re.compile(GOOGLE_ID_RE % google_project)
 
     try:
@@ -405,14 +387,15 @@ def get_github_issue_mapping():
         # convert them to a list.
         github_issues = list(github_repo.get_issues(state='open')) + list(github_repo.get_issues(state='closed'))
         
-        # Each entry from issue_map points from a google issue to a github issue
+        # Each pair in google_id_to_github points from a Google issue ID (int)
+        # to a Github issue ID (int)
         google_id_to_github = {}
         
         # Search for issues that have been migrated by looking for id_re in body
         for issue in github_issues:
             id_match = id_re.search(issue.body)
             
-            # If issue has been migrated
+            # If issue has been migrated store Google and Github IDs
             if id_match:
                 google_id = int(id_match.group(1))
                 github_id = int(issue.number)
@@ -429,28 +412,25 @@ def get_github_issue_mapping():
                 google_id = int(match.group(3))
                 return "%s (Github: #%d)" %(value, google_id_to_github[google_id])
 
+        # Iterate every issue and if it's imported ...
         for issue in github_issues:
             if issue.number in google_id_to_github.values():
-                # Do rewrite and save here
+                # ... use this regex to find references to issues
                 re_issue_string = r"(issue\s?#?\s?(\d+)|id=(\d+))"
                 issue_re = re.compile(re_issue_string, re.IGNORECASE)
                 
+                # ... in the issue body and append the Github ID
                 issue.edit(body=issue_re.sub(replace_issue_number, issue.body))
 
+                # ... and in the comment bodies and append the Github ID
                 for comment in issue.get_comments():
                     GOOGLE_URL_RE
                     comment.edit(body=issue_re.sub(replace_issue_number, comment.body))
                     output("Editing issue numbers on comments of Github #%d" % issue.number)
-                    
-                    
-                    
-                    
 
     except:
-        logging.error( 'Failed to enumerate existing issues')
+        logging.error( 'Failed remapping the issue IDs')
         raise
-        
-    return google_id_to_github
     
     
     
@@ -470,6 +450,7 @@ if __name__ == "__main__":
     parser.add_option("-d", "--dry-run", action = "store_true", dest = "dry_run", help = "Don't modify anything on Github", default = False)
     parser.add_option("-p", "--omit-priority", action = "store_true", dest = "omit_priority", help = "Don't migrate priority labels", default = False)
     parser.add_option("-s", "--synchronize-ids", action = "store_true", dest = "synchronize_ids", help = "Ensure that migrated issues keep the same ID", default = False)
+    parser.add_option("-i", "--assign-ids", action = "store_true", dest = "assign_ids", help = "Assign IDs", default = False)
 
     options, args = parser.parse_args()
 
@@ -520,11 +501,12 @@ if __name__ == "__main__":
         existing_issues = get_existing_github_issues()
         log_rate_info()
         
-        # Migrate Google Code issues in the given dictionary to Github.
-        process_gcode_issues(existing_issues)
-        
-        # Rewrite google issue numbers in github to match github issue numbers.
-        get_github_issue_mapping()
+        if not options.assign_ids:
+            # Migrate Google Code issues in the given dictionary to Github.
+            process_gcode_issues(existing_issues)
+        else:
+            # Rewrite google issue numbers in github to match github issue numbers.
+            map_google_id_to_github()
     except Exception:
         parser.print_help()
         raise
