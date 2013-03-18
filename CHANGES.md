@@ -1,5 +1,10 @@
 This is a change-history and list of contributors to the script.
 
+## 2013.03.18 by [Daniel Niccoli](http://github.com/Borkason)
+  - Extended the script with `--assign-ids` in order to alter imported issues and
+    correct any crossreferences within the imported Google issues.
+  - Fixed several bugs.
+
 ## 2012.10.14 by [Joel Thornton](http://github.com/joelpt) ##
 
   - Improved compatibility with respect to comments migrated by a previous version of

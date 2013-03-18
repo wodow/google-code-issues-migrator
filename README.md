@@ -41,6 +41,7 @@ what's already on Github.
 	  -d, --dry-run             Don't modify anything on Github
 	  -p, --omit-priority       Don't migrate priority labels
 	  -s, --synchronize-ids     Ensure that migrated issues keep the same ID
+	  -i, --assign-ids          Assign IDs to already imported issues. Run without '-i' first.
 
         You will be prompted for your github password.
         
@@ -62,3 +63,7 @@ original Google Code issue.  Normally this happens anyway, but in some cases Goo
 skips issue numbers; this option fills the gaps with dummy issues to ensure that the next
 real issue keeps the same numbering.  This only works, of course, if the migration starts
 with a fresh Github repistory.
+
+`--assign-ids` if you import Google Issues into an already populated Github Issue Tracker,
+use --assign-ids afterwards to correct crossreferences between issues. Run the script
+without `-i` or `--assign-ids` first.
