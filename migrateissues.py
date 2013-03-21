@@ -28,6 +28,7 @@ GITHUB_SPARE_REQUESTS = 50
 
 # Edit this list, if you like to skip issues with the following status
 # values. You can also add your custom status values.
+# WARNING: CASE-SENSITIVE!
 GOOGLE_STATUS_VALUES_FILTERED = (
     #"New",
     #"Accepted",
@@ -40,8 +41,9 @@ GOOGLE_STATUS_VALUES_FILTERED = (
     #"Done",
 )
 
-# Mapping from Google Code issue states to Github labels. Uncomment the
-# default states to map them, or add your custom states to the array.
+# Mapping from Google Code issue states to Github labels.
+# Uncomment the default states to rename them.
+# WARNING: CASE-SENSITIVE!
 GOOGLE_STATUS_MAPPING = {
     #"New"       :"new",
     #"Accepted"  :"accepted",
@@ -153,6 +155,9 @@ def format_comment(comment):
     author = comment.author[0].name.text
     date = parse_gcode_date(comment.published.text)
     content = comment.content.text
+    
+    # Clean content
+    content = content.replace('\n#', '\n&#8203;#')
 
     if comment.updates.mergedIntoUpdate:
         return "_This issue is a duplicate of #%d_" % (options.base_id + int(comment.updates.mergedIntoUpdate.text))
@@ -165,7 +170,7 @@ def add_issue_to_github(issue):
     """ Migrates the given Google Code issue to Github. """
 
     gid = parse_gcode_id(issue.id.text)
-    status = issue.status.text.lower() if issue.status else ""
+    status = issue.status.text if issue.status else ""
     title = issue.title.text
     link = issue.link[1].href
     author = issue.author[0].name.text
@@ -174,6 +179,9 @@ def add_issue_to_github(issue):
 
     # Github takes issue with % in the title or body.
     title = title.replace('%', '&#37;')
+    
+    # Clean content
+    content = content.replace('\n#', '\n&#8203;#')
 
     # Github rate-limits API requests to 5000 per hour, and if we hit that limit part-way
     # through adding an issue it could end up in an incomplete state.  To avoid this we'll
@@ -199,6 +207,8 @@ def add_issue_to_github(issue):
 
     if status in GOOGLE_STATUS_MAPPING:
         labels.append(GOOGLE_STATUS_MAPPING[status])
+    else:
+        labels.append(status.lower())
 
     # Add the new Github issue with its labels and a header identifying it as migrated
 
@@ -520,16 +530,16 @@ if __name__ == "__main__":
     github_repo = github_owner.get_repo(github_project)
 
     # Do migration!
-    try:
-        existing_issues = get_existing_github_issues()
-        log_rate_info()
-        
-        if not options.assign_ids:
-            # Migrate Google Code issues in the given dictionary to Github.
-            process_gcode_issues(existing_issues)
-        else:
-            # Rewrite google issue numbers in github to match github issue numbers.
-            map_google_id_to_github()
-    except Exception:
-        parser.print_help()
-        raise
+  #  try:
+    existing_issues = get_existing_github_issues()
+    log_rate_info()
+    
+    if not options.assign_ids:
+        # Migrate Google Code issues in the given dictionary to Github.
+        process_gcode_issues(existing_issues)
+    else:
+        # Rewrite google issue numbers in github to match github issue numbers.
+        map_google_id_to_github()
+# except Exception:
+ #   parser.print_help()
+ #   raise
