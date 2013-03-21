@@ -1,3 +1,11 @@
+### NOTES BY BORKASON ###
+
+I forked this repo and put a good effort of work into it and fixed a lot of bugs.
+
+Since Google will retire the Issue Tracker API, I did not make any effort to write good code. My commit messages are almost useless and contain a lot work at different parts of the script. **If you need help or have a question, just create a new *issue***
+
+### README.md ###
+
 This is a simple script to migrate issues from Google Code to Github.
 
 For a full history of changes, please
