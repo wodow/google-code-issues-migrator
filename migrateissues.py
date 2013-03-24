@@ -157,7 +157,8 @@ def format_comment(comment):
     content = comment.content.text
     
     # Clean content
-    content = content.replace('\n#', '\n&#8203;#')
+    content = content.replace('\n#', '\n#&#8203;')
+    content = content.replace('\n #', '\n #&#8203;')
 
     if comment.updates.mergedIntoUpdate:
         return "_This issue is a duplicate of #%d_" % (options.base_id + int(comment.updates.mergedIntoUpdate.text))
@@ -181,7 +182,8 @@ def add_issue_to_github(issue):
     title = title.replace('%', '&#37;')
     
     # Clean content
-    content = content.replace('\n#', '\n&#8203;#')
+    content = content.replace('\n#', '\n#&#8203;')
+    content = content.replace('\n #', '\n #&#8203;')
 
     # Github rate-limits API requests to 5000 per hour, and if we hit that limit part-way
     # through adding an issue it could end up in an incomplete state.  To avoid this we'll
