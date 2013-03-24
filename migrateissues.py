@@ -431,14 +431,14 @@ def map_google_id_to_github():
                 # Construct note with Github-ID to include after Google-ID ...
                 note_to_include = "&#8203;%d (Github: #%d)" % (google_id, google_id_to_github[google_id])
                 # ... and replace Google-ID in match_string with according Github-ID
-                return re.sub("\d", note_to_include, match_string)
+		return re.sub(str(google_id), note_to_include, match_string)
                 
             # if match_string similar to "#1"
             elif match.group(2) and int(match.group(2)) in google_id_to_github:
                 google_id = int(match.group(2))
                 note_to_include = "&#8203;%d (Github: #%d)" % (google_id, google_id_to_github[google_id])
                 # ... and replace Google-ID in match_string with according Github-ID
-                return re.sub("\d", note_to_include, match_string)
+                return re.sub(str(google_id), note_to_include, match_string)
                 
             # if match_string similar to "http://code.google.com/p/MYPROJECT/issues/detail?id=1"
             elif match.group(3) and int(match.group(3)) in google_id_to_github:
@@ -452,7 +452,7 @@ def map_google_id_to_github():
             if issue.number in google_id_to_github.values():
                 output('Processing Github issue #%d\n' % issue.number)
                 # ... use this regex to find references to issues
-                re_issue_string = r"issue ?#?(\d+(?! \(G))|[^\n] #(\d+(?! \(G))|(?<!_Original issue: )%s(?! \(G)" % GOOGLE_URL_RE % google_project
+                re_issue_string = r"issue ?#?(\d+(?! \(G))|(?![^\n] )#(\d+(?! \(G))|(?<!_Original issue: )%s(?! \(G)" % GOOGLE_URL_RE % google_project
                 issue_re = re.compile(re_issue_string, re.IGNORECASE)
                 
                 # ... in the issue body and append the Github-ID
