@@ -223,6 +223,9 @@ def add_issue_to_github(issue):
     output("Adding issue %d" % gid)
 
     if not options.dry_run:
+	# Remove empty values from 'labels' list
+	labels = filter (lambda a: a != '', labels)
+
         github_labels = [ github_label(label) for label in labels ]
         github_issue = github_repo.create_issue(title, body = body.encode("utf-8"), labels = github_labels)
 
