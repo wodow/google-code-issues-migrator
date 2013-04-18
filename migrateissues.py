@@ -142,6 +142,22 @@ def should_migrate_comment(comment):
     return False
 
 
+def prepare_content(content):
+    # replace blank content (using text from Google Code)
+    if content is None:
+        content = "(No comment was entered for this change.)"
+
+    # clean content
+    content = content.replace('\n#', '\n#&#8203;')
+    content = content.replace('\n #', '\n #&#8203;')
+
+    # optionally rewrite issue id text that Google hyperlinks
+    # to issue text that Github hyperlinks ("issue N" -> "#N")
+    if options.rewrite_issue_links:
+        content = re.sub('issue\s+(?P<num>\d+)', '#\g<num>', content, flags=re.I)
+    return content
+
+
 def format_comment(comment):
 
     """ Returns the Github comment body for the given Google Code comment.
@@ -154,11 +170,7 @@ def format_comment(comment):
 
     author = comment.author[0].name.text
     date = parse_gcode_date(comment.published.text)
-    content = comment.content.text
-    
-    # Clean content
-    content = content.replace('\n#', '\n#&#8203;')
-    content = content.replace('\n #', '\n #&#8203;')
+    content = prepare_content(comment.content.text)
 
     if comment.updates.mergedIntoUpdate:
         return "_This issue is a duplicate of #%d_" % (options.base_id + int(comment.updates.mergedIntoUpdate.text))
@@ -175,15 +187,11 @@ def add_issue_to_github(issue):
     title = issue.title.text
     link = issue.link[1].href
     author = issue.author[0].name.text
-    content = issue.content.text
     date = parse_gcode_date(issue.published.text)
+    content = prepare_content(issue.content.text)
 
     # Github takes issue with % in the title or body.
     title = title.replace('%', '&#37;')
-    
-    # Clean content
-    content = content.replace('\n#', '\n#&#8203;')
-    content = content.replace('\n #', '\n #&#8203;')
 
     # Github rate-limits API requests to 5000 per hour, and if we hit that limit part-way
     # through adding an issue it could end up in an incomplete state.  To avoid this we'll
@@ -489,6 +497,7 @@ if __name__ == "__main__":
     parser.add_option("-p", "--omit-priority", action = "store_true", dest = "omit_priority", help = "Don't migrate priority labels", default = False)
     parser.add_option("-s", "--synchronize-ids", action = "store_true", dest = "synchronize_ids", help = "Ensure that migrated issues keep the same ID", default = False)
     parser.add_option("-i", "--assign-ids", action = "store_true", dest = "assign_ids", help = "Assign IDs to already imported issues. Run without '-i' first.", default = False)
+    parser.add_option("--rewrite-issue-links", action = "store_true", dest = "rewrite_issue_links", help="Rewrite the text used to link issues (from 'issue N' on Google Code to  '#N' on Github) ", default=False)
 
     options, args = parser.parse_args()
 
