@@ -516,8 +516,10 @@ if __name__ == "__main__":
         try:
             github.Github(github_username, github_password).get_user().login
             password_is_wrong = False
-        except github.GithubException, exception:
+        except github.BadCredentialsException, exception:
             print "Bad credentials, try again."
+        except github.GithubException, exception:
+            logging.exception(exception)
 
     # Google Code
     gc = gdata.projecthosting.client.ProjectHostingClient()
