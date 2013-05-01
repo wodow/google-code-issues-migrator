@@ -33,7 +33,7 @@ what's already on Github.
 ### Required Python libraries ###
 
 * [gdata](http://code.google.com/p/gdata-python-client/) -- `pip install gdata`
-* [PyGithub](https://github.com/jacquev6/PyGithub/) -- `pip install PyGithub` -- v1.8.0+ required
+* [PyGithub](https://github.com/jacquev6/PyGithub/) -- `pip install PyGithub` -- v1.14.0+ required to work with GitHub API v3
 
 ### Usage ###
 
